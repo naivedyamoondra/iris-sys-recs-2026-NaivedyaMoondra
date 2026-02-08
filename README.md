@@ -1,35 +1,34 @@
-##  Task 4: Load Balancing with Multiple Rails Containers
+## Task 5: Database Persistence Using Docker Volumes
 
 ### Objective  
-Run multiple instances of the Rails application and configure Nginx to load-balance incoming requests across them.
+Ensure that the MySQL database data persists even if the database container is stopped or removed.
 
 ---
 
 ### Setup Overview  
 
-- A single MySQL container is used as the shared database backend.
-- Three identical Rails application containers are run using the same Docker image.
-- All containers are connected to a common Docker network.
-- Nginx is configured as a reverse proxy and load balancer using an upstream block.
-- Only Nginx exposes a port to the host machine (port 80).
+- A Docker volume is created to store MySQL data outside the container filesystem.
+- The MySQL container mounts this volume at `/var/lib/mysql`, which is the default data directory used by MySQL.
+- Rails application containers continue to connect to the same MySQL service over the Docker network.
+- No changes are required in the Rails application code.
 
 ---
 
 ### Implementation Details  
 
-- Three Rails containers (`iris-rails-1`, `iris-rails-2`, `iris-rails-3`) are started without exposing their internal ports.
-- Nginx routes incoming HTTP requests to these containers using a round-robin strategy.
-- Database migrations are executed once from a single Rails container, as all application instances share the same database.
+- A named Docker volume is created and attached to the MySQL container.
+- The database schema is initialized using Rails migrations.
+- The MySQL container is stopped and removed to verify persistence.
+- The container is recreated using the same volume, and existing database data remains intact.
 
 ---
 
-### Load Balancing Verification  
+### Persistence Verification  
 
-Load balancing was verified by sending multiple HTTP requests to `http://localhost` and observing that requests were handled by different Rails containers through container logs.  
-Additionally, stopping one Rails container does not affect application availability, confirming successful traffic distribution across remaining instances.
+After deleting and recreating the MySQL container, the previously created database is still available, confirming that the data is successfully persisted using Docker volumes.
 
 ---
 
 ### Outcome  
 
-The Rails application is successfully load-balanced across multiple containers using Nginx, demonstrating horizontal scaling and stateless application design.
+The database state is preserved independently of the container lifecycle, demonstrating correct use of Docker volumes for persistent storage.
