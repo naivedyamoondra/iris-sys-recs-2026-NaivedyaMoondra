@@ -1,16 +1,35 @@
-# Task 1: Pack the Rails application in a Docker container image.
+**Task 2: Multi-Container Orchestration with MySQL**
 
-### Process followed:
-* Cloned the repository into my local machine and reviewed the structure of the project and its dependencies.
-* Created a Dockerfile by using an official Ruby image from Docker Hub which matches the project’s Ruby version.
-* Installed required system dependencies and Ruby gems inside the container.
-* Resolved dependency conflicts by removing incompatible manual version pinning of Rails internal gems, allowing Rails to manage them correctly.
-* Configured the container such that it starts the Rails server.
-* Built the Docker image successfully and verified that the application starts inside the container.
+**Objective**
 
-### Verification
-* Docker image builds successfully, using the `docker build` command.
-* Rails server starts correctly, without any errors inside the container.
+Deploy a separate MySQL database container and establish a secure, isolated network connection between the Rails application and the database.
 
-### Outcome:
-The Rails application was successfully packed and containerized using Docker, completing this task.
+**Steps Followed**
+
+1.  **Network Isolation:** Created a custom Docker bridge network (iris-net) to facilitate private communication between containers without exposing the database to the host machine.
+    
+2.  **Database Provisioning:** Launched a MySQL 8.0 container attached to the private network.
+    
+    *   **Security:** Configured the database without host port mapping to ensure it remains internal-only.
+        
+    *   **Environment:** Defined root credentials, a dedicated application user (iris\_user), and the target database (iris\_db) via environment variables.
+        
+3.  **Configuration Alignment:** Updated config/database.yml to use iris-mysql (the container name) as the hostname.
+    
+4.  **Process Management:** Synchronized the launch timing to ensure the MySQL service was "ready for connections" before the Rails boot process initialized.
+    
+5.  **Port Mapping:** Exposed the application on host port 8080 while the container continues to run internally on port 3000.
+    
+
+**Verification**
+
+*   **Connectivity:** The Rails container successfully resolves the iris-mysql hostname and establishes a TCP connection.
+    
+*   **Isolation:** Verified that the MySQL port (3306) is not accessible from the host machine, while the Rails app is reachable.
+    
+*   **Accessibility:** The application is fully functional and accessible at http://localhost:8080.
+    
+
+**Outcome**
+
+The Rails application and MySQL database are successfully running in separate, linked containers. The setup fulfills all security and networking requirements, completing Task 2.
