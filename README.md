@@ -1,32 +1,35 @@
-# Task 3: Nginx Reverse Proxy Setup
+##  Task 4: Load Balancing with Multiple Rails Containers
 
-## Objective
-Expose the Rails application through an Nginx reverse proxy running in a separate Docker container.
-
----
-
-## Steps Followed
-
-1. **Network Configuration:** Created a dedicated Docker network to allow secure inter-container communication between Nginx, Rails, and MySQL.
-
-2. **Database Provisioning:** Ran the MySQL container on the same network using predefined database credentials to ensure data persistence and connectivity.
-
-3. **Application Deployment:** Ran the Rails application container in isolated mode, without exposing its internal port (3000) directly to the host machine.
-
-4. **Reverse Proxy Configuration:** Configured Nginx using a custom `default.conf` file. This configuration acts as a traffic controller, forwarding incoming HTTP requests from the outside world to the internal Rails container.
-
-
-5. **Container Orchestration:** Mounted the custom Nginx configuration file into the container and exposed port 80 on the host machine, allowing standard web access.
+### Objective  
+Run multiple instances of the Rails application and configure Nginx to load-balance incoming requests across them.
 
 ---
 
-## Verification
+### Setup Overview  
 
-* **Request Forwarding:** Confirmed that Nginx successfully forwards requests to the Rails application.
-* **Accessibility:** Verified the application is fully accessible via http://localhost (standard HTTP port).
-* **Security & Isolation:** Confirmed that direct access to the Rails container port is not possible from the host, ensuring proper reverse proxy behavior and increased security.
+- A single MySQL container is used as the shared database backend.
+- Three identical Rails application containers are run using the same Docker image.
+- All containers are connected to a common Docker network.
+- Nginx is configured as a reverse proxy and load balancer using an upstream block.
+- Only Nginx exposes a port to the host machine (port 80).
 
 ---
 
-## Outcome
-The Rails application is successfully served behind an Nginx reverse proxy using Docker, completing Task 3.
+### Implementation Details  
+
+- Three Rails containers (`iris-rails-1`, `iris-rails-2`, `iris-rails-3`) are started without exposing their internal ports.
+- Nginx routes incoming HTTP requests to these containers using a round-robin strategy.
+- Database migrations are executed once from a single Rails container, as all application instances share the same database.
+
+---
+
+### Load Balancing Verification  
+
+Load balancing was verified by sending multiple HTTP requests to `http://localhost` and observing that requests were handled by different Rails containers through container logs.  
+Additionally, stopping one Rails container does not affect application availability, confirming successful traffic distribution across remaining instances.
+
+---
+
+### Outcome  
+
+The Rails application is successfully load-balanced across multiple containers using Nginx, demonstrating horizontal scaling and stateless application design.
