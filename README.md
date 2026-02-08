@@ -1,37 +1,32 @@
-# Task 2: Multi-Container Orchestration with MySQL
+# Task 3: Nginx Reverse Proxy Setup
 
 ## Objective
-
-Deploy a separate MySQL database container and establish a secure, isolated network connection between the Rails application and the database.
+Expose the Rails application through an Nginx reverse proxy running in a separate Docker container.
 
 ---
 
 ## Steps Followed
 
-1. **Network Isolation:** Created a custom Docker bridge network (`iris-net`) to facilitate private communication between containers without exposing the database to the host machine.
+1. **Network Configuration:** Created a dedicated Docker network to allow secure inter-container communication between Nginx, Rails, and MySQL.
+
+2. **Database Provisioning:** Ran the MySQL container on the same network using predefined database credentials to ensure data persistence and connectivity.
+
+3. **Application Deployment:** Ran the Rails application container in isolated mode, without exposing its internal port (3000) directly to the host machine.
+
+4. **Reverse Proxy Configuration:** Configured Nginx using a custom `default.conf` file. This configuration acts as a traffic controller, forwarding incoming HTTP requests from the outside world to the internal Rails container.
 
 
-2. **Database Provisioning:** Launched a MySQL 8.0 container attached to the private network.
-    * **Security:** Configured the database without host port mapping to ensure it remains internal-only.
-    * **Environment:** Defined root credentials, a dedicated application user (`iris_user`), and the target database (`iris_db`) via environment variables.
-
-3. **Configuration Alignment:** Updated `config/database.yml` to use `iris-mysql` (the container name) as the hostname.
-
-4. **Process Management:** Synchronized the launch timing to ensure the MySQL service was "ready for connections" before the Rails boot process initialized.
-
-5. **Port Mapping:** Exposed the application on host port 8080 while the container continues to run internally on port 3000.
-
+5. **Container Orchestration:** Mounted the custom Nginx configuration file into the container and exposed port 80 on the host machine, allowing standard web access.
 
 ---
 
 ## Verification
 
-* **Connectivity:** The Rails container successfully resolves the `iris-mysql` hostname and establishes a TCP connection.
-* **Isolation:** Verified that the MySQL port (3306) is not accessible from the host machine, while the Rails app is reachable.
-* **Accessibility:** The application is fully functional and accessible at http://localhost:8080.
+* **Request Forwarding:** Confirmed that Nginx successfully forwards requests to the Rails application.
+* **Accessibility:** Verified the application is fully accessible via http://localhost (standard HTTP port).
+* **Security & Isolation:** Confirmed that direct access to the Rails container port is not possible from the host, ensuring proper reverse proxy behavior and increased security.
 
 ---
 
 ## Outcome
-
-The Rails application and MySQL database are successfully running in separate, linked containers. The setup fulfills all security and networking requirements, completing Task 2.
+The Rails application is successfully served behind an Nginx reverse proxy using Docker, completing Task 3.
