@@ -1,40 +1,33 @@
-# Task 6: Full Stack Setup with Docker Compose
+# Task 7: Nginx Request Rate Limiting
 
 ## Objective
-Automate the deployment of the entire multi-container stack using a single declarative configuration file (`docker-compose.yml`), replacing manual container management with docker compose.
+Limit the number of HTTP requests a client can make within a defined time window to protect the application from excessive traffic or abuse.
 
 ---
 
 ## Setup Overview
-
-* Defined all services (MySQL, Rails, Nginx) in a unified Compose file, called (`docker-compose.yml`).
-* Implemented a named Docker volume for the MySQL service to ensure data survives container restarts, also called data persistence.
-* Three Rails application instances are defined and built from the project Dockerfile.
-* Configured Nginx as a reverse proxy to distribute traffic across the Rails applications.
-* Connected all services to a shared internal network for secure communication, using docker compose.
-
-
+* Nginx rate limiting is configured using `limit_req_zone` and `limit_req`.
+* Rate limiting is applied per client IP address.
+* Excess requests beyond the defined threshold are rejected automatically.
 
 ---
 
 ## Implementation Details
+1. A rate limit zone is defined using `$binary_remote_addr` to track requests per IP.
+2. The limit is configured to allow 5 requests per second.
+3. A burst allowance is added to handle small traffic spikes gracefully.
+4. Requests exceeding the limit receive an HTTP 503 Service Unavailable response.
+5. No changes are required in the Rails application; the logic is handled entirely by the Nginx proxy.
 
-1. The MySQL service mounts a named volume at `/var/lib/mysql` to preserve data.
-2. Three Rails containers run simultaneously, connecting to the same shared database.
-3. Nginx uses an `upstream` configuration to balance incoming HTTP requests.
-4. The entire stack is launched with a single command:  
-   `docker compose up --build`
-5. Migrations are run once, targeting the shared database used by all instances.
+
 
 ---
 
 ## Verification
-
-* Confirmed that the application is accessible at http://localhost.
-* Verified that Nginx successfully distributes traffic across multiple Rails containers.
-* Confirmed that running `docker compose down` and `up` preserves all database records, validating the volume configuration.
+* Rapid consecutive requests to http://localhost result in HTTP 503 responses once the defined threshold is exceeded.
+* Successfully confirmed that rate limiting is functioning correctly and protecting the backend services.
 
 ---
 
 ## Outcome
-The stack is fully setup using Docker Compose. This approach simplifies deployment, ensures consistency across environments, and provides built-in load balancing and persistence.
+Nginx successfully enforces request rate limits, improving application resilience and preventing excessive or abusive traffic.
