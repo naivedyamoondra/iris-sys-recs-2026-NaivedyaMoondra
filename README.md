@@ -1,33 +1,33 @@
-# Task 7: Nginx Request Rate Limiting
+# Task 8: Monitoring with Prometheus and Grafana
 
 ## Objective
-Limit the number of HTTP requests a client can make within a defined time window to protect the application from excessive traffic or abuse.
+Configure a monitoring solution to collect and visualize metrics from all running containers.
 
 ---
 
 ## Setup Overview
-* Nginx rate limiting is configured using `limit_req_zone` and `limit_req`.
-* Rate limiting is applied per client IP address.
-* Excess requests beyond the defined threshold are rejected automatically.
+* cAdvisor is used to collect real-time container metrics.
+* Prometheus scrapes metrics from cAdvisor at regular intervals.
+* Grafana is configured to use Prometheus as a data source.
+* All monitoring services are integrated into the existing Docker Compose setup.
 
 ---
 
 ## Implementation Details
-1. A rate limit zone is defined using `$binary_remote_addr` to track requests per IP.
-2. The limit is configured to allow 5 requests per second.
-3. A burst allowance is added to handle small traffic spikes gracefully.
-4. Requests exceeding the limit receive an HTTP 503 Service Unavailable response.
-5. No changes are required in the Rails application; the logic is handled entirely by the Nginx proxy.
-
-
+* cAdvisor successfully exposes container performance metrics such as CPU, memory, and network usage.
+* Prometheus is configured with a 5-second scrape interval and successfully scrapes metrics from cAdvisor.
+* Grafana connects successfully to Prometheus as a data source.
+* Although the Prometheus data source was working correctly, the pre-built Grafana dashboards did not display container metrics due to query/label mismatches in the dashboard configuration.
 
 ---
 
 ## Verification
-* Rapid consecutive requests to http://localhost result in HTTP 503 responses once the defined threshold is exceeded.
-* Successfully confirmed that rate limiting is functioning correctly and protecting the backend services.
+* Prometheus shows the cAdvisor target as **UP**.
+* Prometheus queries (e.g., container CPU and memory metrics) return valid results.
+* cAdvisor UI displays live container statistics.
+* Grafana successfully connects to Prometheus, but imported dashboards did not render metrics correctly.
 
 ---
 
 ## Outcome
-Nginx successfully enforces request rate limits, improving application resilience and preventing excessive or abusive traffic.
+The monitoring pipeline (**cAdvisor → Prometheus → Grafana**) was successfully configured, and metrics were verified at the Prometheus and cAdvisor levels. While Grafana dashboards did not display metrics as expected due to dashboard query configuration issues, the core monitoring stack was functioning correctly and collecting container performance data.
