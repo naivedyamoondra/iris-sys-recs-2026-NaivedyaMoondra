@@ -1,48 +1,51 @@
-# Bonus Task 1: CI/CD Pipeline using GitHub Actions
+# Bonus Task 2: Automated Backup Daemon (Database + Code)
 
 ## Objective
-Automate the process of building and publishing the Docker image to Docker Hub using GitHub Actions.
+Implement an automated daemon to periodically back up both the database and application source code.
 
 ## Overview
-A GitHub Actions workflow was implemented to automatically:
-* Build the Docker image for the application
-* Authenticate securely with Docker Hub
-* Push the built image to Docker Hub
-* Trigger on pushes to all branches
+A dedicated backup service was added to the Docker Compose setup to provide automated, periodic backups.
+The backup container:
+* Connects to the MySQL database
+* Performs database dumps using `mysqldump`
+* Archives and compresses the application source code
+* Generates timestamped backup files
+* Runs continuously in daemon mode
+* Stores backups on the host machine
 
-This ensures automated container image delivery and continuous integration.
+## Implementation Details
+A new service named `backup` was added to `docker-compose.yml`.
+The service:
+* Uses a lightweight Alpine Linux image
+* Installs MySQL client tools at runtime
+* Connects to the MySQL container via Docker network
+* Executes periodic backup operations every hour
+* Stores backups in host-mounted directories:
+  * `db_backups/`
+  * `code_backups/`
 
-## Workflow Location
-The workflow file is located at:
-`.github/workflows/docker-build.yml`
+## Backup Process
+Every 3600 seconds:
+1. The container executes `mysqldump` to export the database.
+2. A timestamped SQL file is generated.
+3. The full project directory is archived and compressed using `tar` and `gzip`.
+4. Files are saved to the respective host directories.
 
-## Workflow Configuration
-The pipeline performs the following steps:
-1. Checks out the repository source code.
-2. Logs in to Docker Hub using repository secrets.
-3. Builds the Docker image using the project's Dockerfile.
-4. Pushes the image to Docker Hub with the `latest` tag.
+Example generated files:
+* `db-2026-02-14-07-27-27.sql`
+* `code-2026-02-14-07-38-20.tar.gz`
 
-## GitHub Secrets Configuration
-The following secrets were configured in the repository settings:
-* **DOCKER_USERNAME** – Docker Hub username
-* **DOCKER_PASSWORD** – Docker Hub access token
-
-These credentials are securely stored in GitHub and are not exposed in the repository.
-
-## Trigger Configuration
-The workflow is configured to run automatically on push events to all branches using:
-
-branches: "**"
-
-
-This allows development and testing across feature branches before merging into `main`.
+## Verification
+* The `db_backups/` directory contains .sql files.
+* The `code_backups/` directory contains .tar.gz files.
+* The backup container logs confirm periodic execution.
+* Backup files persist even if containers are restarted.
 
 ## Outcome
-Whenever changes are pushed:
-* The Docker image is automatically built.
-* The image is pushed to Docker Hub under:
-  `<docker-username>/iris-rails:latest`
+The system now includes an automated backup daemon that:
+* Protects database data
+* Protects application source code
+* Runs without manual intervention
+* Supports disaster recovery scenarios
 
-This eliminates the need for manual Docker builds and ensures consistent image publishing.
-
+This demonstrates implementation of automated backup and data protection within a containerized environment.
