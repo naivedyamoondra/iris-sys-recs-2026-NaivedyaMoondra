@@ -1,33 +1,35 @@
-# Task 8: Monitoring with Prometheus and Grafana
+# Bonus Task 1: CI/CD Pipeline using GitHub Actions
 
 ## Objective
-Configure a monitoring solution to collect and visualize metrics from all running containers.
+Automate the process of building and publishing the Docker image to Docker Hub using GitHub Actions.
 
----
+## Overview
+A GitHub Actions workflow was implemented to automatically:
+* Build the Docker image for the application
+* Authenticate securely with Docker Hub
+* Push the built image to Docker Hub
+* Trigger on pushes to all branches
 
-## Setup Overview
-* cAdvisor is used to collect real-time container metrics.
-* Prometheus scrapes metrics from cAdvisor at regular intervals.
-* Grafana is configured to use Prometheus as a data source.
-* All monitoring services are integrated into the existing Docker Compose setup.
+This ensures automated container image delivery and continuous integration.
 
----
+## Workflow Location
+The workflow file is located at:
+`.github/workflows/docker-build.yml`
 
-## Implementation Details
-* cAdvisor successfully exposes container performance metrics such as CPU, memory, and network usage.
-* Prometheus is configured with a 5-second scrape interval and successfully scrapes metrics from cAdvisor.
-* Grafana connects successfully to Prometheus as a data source.
-* Although the Prometheus data source was working correctly, the pre-built Grafana dashboards did not display container metrics due to query/label mismatches in the dashboard configuration.
+## Workflow Configuration
+The pipeline performs the following steps:
+1. Checks out the repository source code.
+2. Logs in to Docker Hub using repository secrets.
+3. Builds the Docker image using the project's Dockerfile.
+4. Pushes the image to Docker Hub with the `latest` tag.
 
----
+## GitHub Secrets Configuration
+The following secrets were configured in the repository settings:
+* **DOCKER_USERNAME** – Docker Hub username
+* **DOCKER_PASSWORD** – Docker Hub access token
 
-## Verification
-* Prometheus shows the cAdvisor target as **UP**.
-* Prometheus queries (e.g., container CPU and memory metrics) return valid results.
-* cAdvisor UI displays live container statistics.
-* Grafana successfully connects to Prometheus, but imported dashboards did not render metrics correctly.
+These credentials are securely stored in GitHub and are not exposed in the repository.
 
----
+## Trigger Configuration
+The workflow is configured to run automatically on push events to all branches using:
 
-## Outcome
-The monitoring pipeline (**cAdvisor → Prometheus → Grafana**) was successfully configured, and metrics were verified at the Prometheus and cAdvisor levels. While Grafana dashboards did not display metrics as expected due to dashboard query configuration issues, the core monitoring stack was functioning correctly and collecting container performance data.
