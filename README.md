@@ -33,3 +33,16 @@ These credentials are securely stored in GitHub and are not exposed in the repos
 ## Trigger Configuration
 The workflow is configured to run automatically on push events to all branches using:
 
+branches: "**"
+
+
+This allows development and testing across feature branches before merging into `main`.
+
+## Outcome
+Whenever changes are pushed:
+* The Docker image is automatically built.
+* The image is pushed to Docker Hub under:
+  `<docker-username>/iris-rails:latest`
+
+This eliminates the need for manual Docker builds and ensures consistent image publishing.
+
