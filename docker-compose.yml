@@ -87,8 +87,31 @@ services:
     networks:
       - iris-net
 
+  backup:
+    image: alpine
+    container_name: iris-backup
+    depends_on:
+      - mysql
+    volumes:
+      - ./db_backups:/backups/db
+      - ./code_backups:/backups/code
+      - .:/app
+    entrypoint: >
+      sh -c "apk add --no-cache mysql-client tar gzip &&
+      while true; do
+        echo 'Starting backup...';
+        mysqldump -h mysql -u root -prootpass iris_db > /backups/db/db-$(date +%F-%H-%M-%S).sql;
+        tar -czf /backups/code/code-$(date +%F-%H-%M-%S).tar.gz /app;
+        echo 'Backup completed.';
+        sleep 3600;
+      done"
+    networks:
+      - iris-net
+
 volumes:
   iris-mysql-data:
 
 networks:
   iris-net:
+    driver: bridge
+
